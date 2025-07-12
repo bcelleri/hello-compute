@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla de Derecho Interactiva</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f6fb;
+      padding: 40px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #084c7c;
+    }
+    h2 {
+      margin-top: 40px;
+      color: #0c5e99;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+    .materia {
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 8px;
+      background: #fff;
+      border-left: 6px solid #1e90ff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .materia:hover {
+      background-color: #f0f8ff;
+    }
+    .bloqueada {
+      background-color: #eaeaea !important;
+      border-left-color: #999;
+      color: #777;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .aprobada {
+      background-color: #d2f8d2 !important;
+      text-decoration: line-through;
+      border-left-color: #32cd32;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla de Derecho Interactiva</h1>
+  <div id="contenedorMaterias"></div>
+
+  <script>
+    const materias = {
+      // 👩‍⚖️ NIVEL 1
+      "Introducción al Derecho": { nivel: 1, requisitos: [], desbloquea: ["Historia y Filosofía del Derecho"] },
+      "Expresión Oral y Redacción Jurídica": { nivel: 1, requisitos: [], desbloquea: ["Lógica y Dialéctica Jurídica"] },
+
+      // 🏛️ NIVEL 2
+      "Historia y Filosofía del Derecho": { nivel: 2, requisitos: ["Introducción al Derecho"], desbloquea: [] },
+      "Lógica y Dialéctica Jurídica": { nivel: 2, requisitos: ["Expresión Oral y Redacción Jurídica"], desbloquea: ["Teoría General del Estado"] },
+
+      // 📘 NIVEL 3
+      "Teoría General del Estado": { nivel: 3, requisitos: ["Lógica y Dialéctica Jurídica"], desbloquea: ["Derecho Constitucional I"] },
+      "Derecho Constitucional I": { nivel: 3, requisitos: ["Teoría General del Estado"], desbloquea: ["Derecho Constitucional II"] },
+
+      // 📗 NIVEL 4
+      "Derecho Constitucional II": { nivel: 4, requisitos: ["Derecho Constitucional I"], desbloquea: ["Derecho Procesal Constitucional"] },
+      "Metodología de la Investigación I": { nivel: 4, requisitos: [], desbloquea: ["Diseño de la Investigación y Proceso de Titulación"] },
+      "Sistemas Jurídicos Contemporáneos": { nivel: 4, requisitos: [], desbloquea: [] },
+      "Psicología Jurídica": { nivel: 4, requisitos: [], desbloquea: [] },
+
+      // 📙 NIVEL 5
+      "Derecho Procesal Constitucional": { nivel: 5, requisitos: ["Derecho Constitucional II"], desbloquea: [] },
+      "Teoría General de las Obligaciones y Contratos I": { nivel: 5, requisitos: [], desbloquea: ["Teoría General de las Obligaciones y Contratos II"] },
+      "Derecho Penal I": { nivel: 5, requisitos: [], desbloquea: ["Derecho Penal II"] },
+      "Propiedad Intelectual": { nivel: 5, requisitos: [], desbloquea: [] },
+
+      // 📕 NIVEL 6
+      "Derecho Penal II": { nivel: 6, requisitos: ["Derecho Penal I"], desbloquea: ["Derecho Procesal Penal I"] },
+      "Teoría General de las Obligaciones y Contratos II": { nivel: 6, requisitos: ["Teoría General de las Obligaciones y Contratos I"], desbloquea: [] },
+      "Praxis Profesional I": { nivel: 6, requisitos: [], desbloquea: ["Praxis Profesional II"] },
+      "Derecho Minero y Petrolero": { nivel: 6, requisitos: [], desbloquea: [] },
+
+      // 📒 NIVEL 7
+      "Derecho Procesal Penal I": { nivel: 7, requisitos: ["Derecho Penal II"], desbloquea: ["Derecho Procesal Penal II"] },
+      "Praxis Profesional II": { nivel: 7, requisitos: ["Praxis Profesional I"], desbloquea: [] },
+      "Diseño de la Investigación y Proceso de Titulación": { nivel: 7, requisitos: ["Metodología de la Investigación I"], desbloquea: [] },
+      "Argumentación y Hermenéutica Jurídica": { nivel: 7, requisitos: [], desbloquea: [] },
+
+      // 🌍 NIVEL 8
+      "Derecho Procesal Penal II": { nivel: 8, requisitos: ["Derecho Procesal Penal I"], desbloquea: [] },
+      "Derecho Ambiental y de la Naturaleza": { nivel: 8, requisitos: [], desbloquea: [] },
+      "Economía Política Enfocada al Derecho": { nivel: 8, requisitos: [], desbloquea: [] },
+      "Estadística Aplicada al Derecho": { nivel: 8, requisitos: [], desbloquea: [] },
+
+      // 🧠 NIVEL 9
+      "Gobiernos Autónomos Descentralizados": { nivel: 9, requisitos: [], desbloquea: [] },
+      "Sistemas Internacionales de Protección de Derechos": { nivel: 9, requisitos: [], desbloquea: [] },
+      "Instituciones del Derecho Societario": { nivel: 9, requisitos: [], desbloquea: [] },
+      "Derecho Internacional Privado": { nivel: 9, requisitos: [], desbloquea: [] }
+    };
+
+    const estados = {};
+
+    function crearMaterias() {
+      const contenedor = document.getElementById("contenedorMaterias");
+      const niveles = [...new Set(Object.values(materias).map(m => m.nivel))].sort((a, b) => a - b);
+
+      niveles.forEach(nivel => {
+        const titulo = document.createElement("h2");
+        titulo.textContent = `Nivel ${nivel}`;
+        contenedor.appendChild(titulo);
+
+        Object.entries(materias).forEach(([nombre, datos]) => {
+          if (datos.nivel === nivel) {
+            const div = document.createElement("div");
+            div.textContent = nombre;
+            div.classList.add("materia");
+
+            const tieneReq = datos.requisitos && datos.requisitos.length > 0;
+            if (tieneReq) div.classList.add("bloqueada");
+
+            div.id = nombre;
+            div.onclick = () => aprobar(nombre);
+            contenedor.appendChild(div);
+            estados[nombre] = false;
+          }
+        });
+      });
+    }
+
+    function aprobar(nombre) {
+      const materia = document.getElementById(nombre);
+      if (materia.classList.contains("bloqueada")) return;
+
+      materia.classList.add("aprobada");
+      materia.onclick = null;
+      estados[nombre] = true;
+
+      const desbloqueos = materias[nombre].desbloquea || [];
+      desbloqueos.forEach(sig => {
+        const reqs = materias[sig].requisitos || [];
+        const puedeDesbloquearse = reqs.every(r => estados[r]);
+        if (puedeDesbloquearse) {
+          const elem = document.getElementById(sig);
+          if (elem && elem.classList.contains("bloqueada")) {
+            elem.classList.remove("bloqueada");
+            elem.onclick = () => aprobar(sig);
+          }
+        }
+      });
+    }
+
+    crearMaterias();
+  </script>
+</body>
+</html>
